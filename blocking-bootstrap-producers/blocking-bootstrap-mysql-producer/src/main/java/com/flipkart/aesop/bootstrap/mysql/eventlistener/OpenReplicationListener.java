@@ -15,6 +15,7 @@ package com.flipkart.aesop.bootstrap.mysql.eventlistener;
 
 import com.flipkart.aesop.bootstrap.mysql.eventprocessor.BinLogEventProcessor;
 import com.flipkart.aesop.bootstrap.mysql.txnprocessor.MysqlTransactionManager;
+import com.github.shyiko.mysql.binlog.event.Event;
 import com.google.code.or.binlog.BinlogEventListener;
 import com.google.code.or.binlog.BinlogEventV4;
 import org.trpr.platform.core.impl.logging.LogFactory;
@@ -22,12 +23,15 @@ import org.trpr.platform.core.spi.logging.Logger;
 
 import java.util.Map;
 
+import com.github.shyiko.mysql.binlog.event.Event;
+
+
 /**
  * The <OpenReplicationListener> is a binary log callback implementation of {@link BinlogEventListener}.
  * <a href="https://code.google.com/p/open-replicator/">OpenReplicator</a> provides callback to this implementation.
  * @author nrbafna
  */
-public class OpenReplicationListener implements BinlogEventListener
+public class OpenReplicationListener
 {
     /** Logger for this class */
     private static final Logger LOGGER = LogFactory.getLogger(OpenReplicationListener.class);
@@ -62,14 +66,14 @@ public class OpenReplicationListener implements BinlogEventListener
      * @see com.google.code.or.binlog.BinlogEventListener#onEvents(com.google.code.or.binlog.BinlogEventV4)
      */
     @Override
-    public void onEvents(BinlogEventV4 event)
+    public void onEvents(Event event)
     {
         if (event == null)
         {
             LOGGER.error("Received null event");
             return;
         }
-        LOGGER.info("Current SCN:" + event.getHeader().getPosition());
+//        LOGGER.info("Current SCN:" + event.getHeader().getPosition());
         try
         {
             BinLogEventProcessor processor = processors.get(event.getHeader().getEventType());

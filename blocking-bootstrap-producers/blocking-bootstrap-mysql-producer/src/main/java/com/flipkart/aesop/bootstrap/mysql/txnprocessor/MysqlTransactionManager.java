@@ -15,10 +15,10 @@
  */
 package com.flipkart.aesop.bootstrap.mysql.txnprocessor;
 
-import com.google.code.or.binlog.BinlogEventV4Header;
-import com.google.code.or.common.glossary.Row;
+import com.github.shyiko.mysql.binlog.event.EventHeader;
 import com.linkedin.databus.core.DbusOpcode;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +28,8 @@ import java.util.Map;
 public interface MysqlTransactionManager extends TransactionProcessor,SourceProcessor{
 
     /** Persists change events in event buffer */
-	void performChanges(long tableId, BinlogEventV4Header eventHeader, List<Row> rowList, final DbusOpcode doc);
+	void performChanges(long tableId, EventHeader eventHeader, List<Serializable[]> rowList, final DbusOpcode doc);
+//	void performChanges(long tableId, BinlogEventV4Header eventHeader, List<Row> rowList, final DbusOpcode doc);
 
     /** Set the current bin log file number*/
 	void setCurrFileNum(int currFileNum) ;

@@ -20,7 +20,7 @@ import com.flipkart.aesop.bootstrap.mysql.txnprocessor.MysqlTransactionManager;
 import com.flipkart.aesop.bootstrap.mysql.utils.ORToMysqlMapper;
 import com.flipkart.aesop.event.AbstractEvent;
 import com.flipkart.aesop.runtime.bootstrap.consumer.SourceEventConsumer;
-import com.google.code.or.binlog.BinlogEventV4Header;
+import com.github.shyiko.mysql.binlog.event.EventHeader;
 import com.google.code.or.common.glossary.Row;
 import com.linkedin.databus.core.DatabusRuntimeException;
 import com.linkedin.databus.core.DbusOpcode;
@@ -30,6 +30,7 @@ import com.linkedin.databus2.schemas.VersionedSchema;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,7 +214,7 @@ public class MysqlTransactionManagerImpl<T extends AbstractEvent> implements Mys
      * @param databusOpcode operation code indicating nature of change such as insertion,deletion or updation.
      */
     @Override
-    public void performChanges(long tableId, BinlogEventV4Header eventHeader, List<Row> rowList,
+    public void performChanges(long tableId, EventHeader eventHeader, List<Serializable[]> rowList,
                                final DbusOpcode databusOpcode)
     {
         try
@@ -225,7 +226,7 @@ public class MysqlTransactionManagerImpl<T extends AbstractEvent> implements Mys
             LOGGER.debug("Schema obtained for table " + currTableName + " = " + schema);
             if (schema != null)
             {
-                for (Row row : rowList)
+                for (Serializable[] row : rowList)
                 {
                     AbstractEvent abstractEvent =binLogEventMapper.mapBinLogEvent(row, schema.getSchema(),
                             databusOpcode);

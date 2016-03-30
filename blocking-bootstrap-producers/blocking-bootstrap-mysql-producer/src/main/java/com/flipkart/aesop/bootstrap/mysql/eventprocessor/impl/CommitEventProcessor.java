@@ -20,6 +20,7 @@ import com.flipkart.aesop.bootstrap.mysql.eventprocessor.BinLogEventProcessor;
 import com.google.code.or.binlog.BinlogEventV4;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * The <code>CommitEventProcessor</code> processes XIDEvent from source. This event is invoked when a particular transaction is committed.
@@ -33,7 +34,7 @@ public class CommitEventProcessor implements BinLogEventProcessor
 	private static final Logger LOGGER = LogFactory.getLogger(CommitEventProcessor.class);
 
 	@Override
-	public void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception {
+	public void process(Event event, OpenReplicationListener listener) throws Exception {
 		if ( !listener.getMysqlTransactionManager().isBeginTxnSeen()){
 			LOGGER.warn("Skipping event (" + event
 					+ ") as this is before the start of first transaction");

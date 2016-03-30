@@ -17,9 +17,12 @@ package com.flipkart.aesop.destinationoperation.implementation;
 
 import com.flipkart.aesop.destinationoperation.DeleteDestinationStoreProcessor;
 import com.flipkart.aesop.event.AbstractEvent;
+import com.github.shyiko.mysql.binlog.event.Event;
 import com.linkedin.databus.client.pub.ConsumerCallbackResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.naming.OperationNotSupportedException;
 
 /**
  * Default Delete Destination Operation Layer which logs the delete events.
@@ -37,4 +40,7 @@ public class DefaultDeleteDataLayer extends DeleteDestinationStoreProcessor
         return ConsumerCallbackResult.SUCCESS;
     }
 
+    public ConsumerCallbackResult processDestinationEvent(Event destinationEvent) throws OperationNotSupportedException {
+        return null;
+    }
 }

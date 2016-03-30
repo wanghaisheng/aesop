@@ -21,6 +21,7 @@ import com.flipkart.aesop.event.implementation.SourceEvent;
 
 import java.util.List;
 import java.util.Set;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * Mapper Interface to be implemented by the {@link SourceEvent} to {@link DestinationEvent} mappers.
@@ -35,7 +36,7 @@ public interface Mapper
 	 * @param totalDestinationGroups
 	 * @return {@link List} of {@link DestinationEvent}
 	 */
-	List<AbstractEvent> mapSourceEventToDestinationEvent(AbstractEvent sourceEvent, Set<Integer> destinationGroupSet,
+	List<Event> mapSourceEventToDestinationEvent(Event sourceEvent, Set<Integer> destinationGroupSet,
 	        int totalDestinationGroups);
 
 	/**
@@ -44,5 +45,5 @@ public interface Mapper
 	 * @param sourceEvent
 	 * @return {@link List} of {@link DestinationEvent}
 	 */
-	List<AbstractEvent> mapSourceEventToDestinationEvent(AbstractEvent sourceEvent);
+	List<Event> mapSourceEventToDestinationEvent(Event sourceEvent);
 }

@@ -14,10 +14,12 @@ package com.flipkart.aesop.bootstrap.mysql.eventprocessor.impl;
 
 import com.flipkart.aesop.bootstrap.mysql.eventlistener.OpenReplicationListener;
 import com.flipkart.aesop.bootstrap.mysql.eventprocessor.BinLogEventProcessor;
+import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.event.QueryEvent;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * The <code>QueryEventProcessor</code> processes QueryEvent from source.
@@ -32,10 +34,10 @@ public class MutatingQueryEventProcessor implements BinLogEventProcessor
 	private static final Logger LOGGER = LogFactory.getLogger(MutatingQueryEventProcessor.class);
 
 	@Override
-	public void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception
+	public void process(Event event, OpenReplicationListener listener) throws Exception
 	{
-		QueryEvent queryEvent = (QueryEvent) event;
-		String sql = queryEvent.getSql().toString();
+		QueryEventData queryEventData = event.getData();
+		String sql = queryEventData.getSql().toString();
 		if ("BEGIN".equalsIgnoreCase(sql))
 		{
 			listener.getMysqlTransactionManager().setBeginTxnSeen(true);
@@ -45,7 +47,7 @@ public class MutatingQueryEventProcessor implements BinLogEventProcessor
 		else if ("COMMIT".equalsIgnoreCase(sql))
 		{
 			LOGGER.debug("COMMIT sql: " + sql);
-			listener.getMysqlTransactionManager().endXtion(queryEvent.getHeader().getTimestamp());
+			listener.getMysqlTransactionManager().endXtion(event.getHeader().getTimestamp());
 		}
 		else if ("ROLLBACK".equalsIgnoreCase(sql))
 		{

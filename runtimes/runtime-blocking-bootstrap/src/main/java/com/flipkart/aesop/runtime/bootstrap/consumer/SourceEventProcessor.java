@@ -13,6 +13,7 @@
 
 package com.flipkart.aesop.runtime.bootstrap.consumer;
 
+import com.github.shyiko.mysql.binlog.event.Event;
 import com.linkedin.databus2.core.BackoffTimer;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
@@ -29,11 +30,13 @@ public class SourceEventProcessor implements Runnable
 {
     public static final Logger LOGGER = LogFactory.getLogger(SourceEventProcessor.class);
 
-    private final AbstractEvent sourceEvent;
+//    private final AbstractEvent sourceEvent;
+    private final Event sourceEvent;
+
     private final AbstractEventConsumer consumer;
     private final BackoffTimer timer;
 
-    public SourceEventProcessor(AbstractEvent sourceEvent, AbstractEventConsumer consumer, BackoffTimer timer)
+    public SourceEventProcessor(Event sourceEvent, AbstractEventConsumer consumer, BackoffTimer timer)
     {
         this.sourceEvent = sourceEvent;
         this.consumer = consumer;
@@ -43,8 +46,8 @@ public class SourceEventProcessor implements Runnable
     @Override
     public void run()
     {
-        LOGGER.info("Processing :" + sourceEvent.getPrimaryKeyValues() + ":" + sourceEvent.getNamespaceName() + ""
-                + sourceEvent.getEntityName());
+        LOGGER.info("Processing :" + sourceEvent.getHeader() + ":" + sourceEvent.getHeader().getTimestamp() + ""
+                + sourceEvent.getHeader().getEventType());
         process();
     }
 

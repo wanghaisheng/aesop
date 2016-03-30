@@ -15,6 +15,7 @@ package com.flipkart.aesop.bootstrap.mysql.eventprocessor.impl;
 import com.flipkart.aesop.bootstrap.mysql.eventlistener.OpenReplicationListener;
 import com.flipkart.aesop.bootstrap.mysql.eventprocessor.BinLogEventProcessor;
 import com.flipkart.aesop.bootstrap.mysql.txnprocessor.MysqlTransactionManager;
+import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.common.glossary.Pair;
@@ -23,8 +24,12 @@ import com.linkedin.databus.core.DbusOpcode;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * The <code>UpdateEventProcessor</code> processes UpdateRowsEvent from source. This event is received if there is any
@@ -38,7 +43,7 @@ public class UpdateEventProcessor implements BinLogEventProcessor
 	private static final Logger LOGGER = LogFactory.getLogger(UpdateEventProcessor.class);
 
 	@Override
-	public void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception
+	public void process(Event event, OpenReplicationListener listener) throws Exception
 	{
 		MysqlTransactionManager manager = listener.getMysqlTransactionManager();
 		if (!manager.isBeginTxnSeen())
@@ -47,15 +52,24 @@ public class UpdateEventProcessor implements BinLogEventProcessor
 			return;
 		}
 		LOGGER.debug("Update Event Received : " + event);
-		UpdateRowsEvent updateRowsEvent = (UpdateRowsEvent) event;
-		List<Pair<Row>> listOfPairs = updateRowsEvent.getRows();
-		List<Row> rowList = new ArrayList<Row>(listOfPairs.size());
-		for (Pair<Row> pair : listOfPairs)
-		{
-			Row row = pair.getAfter();
-			rowList.add(row);
+		UpdateRowsEventData updateRowsEventData = event.getData();
+		List<Map.Entry<Serializable[], Serializable[]>> listOfPairs = updateRowsEventData.getRows();
+//		List<Pair<Row>> listOfPairs = updateRowsEvent.getRows();
+//		List<Row> rowList = new ArrayList<Row>(listOfPairs.size());
+//		for (Pair<Row> pair : listOfPairs)
+//		{
+//			Row row = pair.getAfter();
+//			rowList.add(row);
+//		}
+		List<Map.Entry<Serializable[], Serializable[]>> rows = updateRowsEventData.getRows();
+
+
+		List<Serializable[]> inserValues = new ArrayList<Serializable[]>();
+		for (Map.Entry<Serializable[], Serializable[]> rowItem : rows) {
+			inserValues.add(rowItem.getValue());
 		}
-		manager.performChanges(updateRowsEvent.getTableId(), updateRowsEvent.getHeader(), rowList, DbusOpcode.UPSERT);
-		LOGGER.debug("Update Successful for  " + event.getHeader().getEventLength() + " . Data updated : " + rowList);
+//			Object[][] params = inserValues.toArray(new Object[inserValues.size()][]);
+		manager.performChanges(updateRowsEventData.getTableId(), event.getHeader(), inserValues, DbusOpcode.UPSERT);
+		LOGGER.debug("Update Successful for  " + event.getHeader().getHeaderLength() + " . Data updated : " + inserValues);
 	}
 }

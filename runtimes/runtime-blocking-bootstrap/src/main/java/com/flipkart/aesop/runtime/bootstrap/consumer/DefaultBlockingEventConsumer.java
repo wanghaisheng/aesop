@@ -24,6 +24,7 @@ import org.trpr.platform.core.spi.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * <code>DefaultBlockingEventConsumer</code> is the default blocking implementation for {@link SourceEventConsumer}. It
@@ -53,10 +54,14 @@ public class DefaultBlockingEventConsumer implements SourceEventConsumer,Initial
     private RejectedExecutionHandler rejectedExecutionHandler;
 
     @Override
-    public void onEvent(AbstractEvent sourceEvent)
+//    public void onEvent(AbstractEvent sourceEvent)
+    public void onEvent(Event sourceEvent)
+
     {
         /** partition and submit */
-        String primaryKeyValues = Joiner.on(PRIMARY_KEY_SEPERATOR).join(sourceEvent.getPrimaryKeyValues());
+//        String primaryKeyValues = Joiner.on(PRIMARY_KEY_SEPERATOR).join(sourceEvent.getPrimaryKeyValues());
+        String primaryKeyValues = sourceEvent.getHeader().toString();
+
         Integer partitionNumber = ((primaryKeyValues.hashCode() & 0x7fffffff) % numberOfPartition);
         LOGGER.debug("Partition:" + primaryKeyValues.hashCode() + ":" + partitionNumber);
         executors.get(partitionNumber).execute(new SourceEventProcessor(sourceEvent, eventConsumer,backoffTimer));

@@ -34,6 +34,7 @@ import com.linkedin.databus2.core.DatabusException;
 import javax.naming.OperationNotSupportedException;
 import java.util.List;
 import java.util.Map;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * Default Implementation of {@link AbstractEventConsumer}.
@@ -116,23 +117,23 @@ public class DefaultEventConsumerImpl extends AbstractEventConsumer
     }
 
     @Override
-    public ConsumerCallbackResult processSourceEvent(AbstractEvent sourceEvent)
+    public ConsumerCallbackResult processSourceEvent(Event sourceEvent)
     {
         /* Pre Mapping of Source Event , calling PreMappingTransformer for the source event */
-        AbstractEvent sourceEventAfterTransformation = preMappingTransformer == null ? sourceEvent :
+        Event sourceEventAfterTransformation = preMappingTransformer == null ? sourceEvent :
                 preMappingTransformer.transform(sourceEvent);
 
-        List<AbstractEvent> destinationEventList =
+        List<Event> destinationEventList =
                 mapper.mapSourceEventToDestinationEvent(sourceEventAfterTransformation, destinationGroupSet, totalDestinationGroups);
 
-        for (AbstractEvent destinationEvent : destinationEventList)
+        for (Event destinationEvent : destinationEventList)
         {
             /* Post Mapping of Source Event , calling PreMappingTransformer for the destination event */
-            AbstractEvent destinationEventAfterTransformation = (postMappingTransformer == null ?
+            Event destinationEventAfterTransformation = (postMappingTransformer == null ?
                     destinationEvent : postMappingTransformer.transform(destinationEvent));
 
             DestinationEventProcessor destinationEventProcessor =
-			        destinationProcessorMap.get(destinationEvent.getEventType());
+			        destinationProcessorMap.get(destinationEvent.getHeader().getEventType());
 
             /* Process Destination Events */
 			try {

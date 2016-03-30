@@ -18,6 +18,7 @@ import com.flipkart.aesop.event.AbstractEvent;
 import com.linkedin.databus.client.pub.ConsumerCallbackResult;
 
 import javax.naming.OperationNotSupportedException;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * DestinationEventProcessor interface needs to be implemented by the {@link com.flipkart.aesop.eventconsumer.AbstractEventConsumer}
@@ -34,5 +35,5 @@ public interface DestinationEventProcessor
      *  method to process destination Event
      * @param destinationEvent of type {@link AbstractEvent}
      */
-     public ConsumerCallbackResult processDestinationEvent(AbstractEvent destinationEvent) throws OperationNotSupportedException;
+     public ConsumerCallbackResult processDestinationEvent(Event destinationEvent) throws OperationNotSupportedException;
 }

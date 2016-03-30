@@ -14,7 +14,9 @@
 package com.flipkart.aesop.bootstrap.mysql.eventprocessor;
 
 import com.flipkart.aesop.bootstrap.mysql.eventlistener.OpenReplicationListener;
+import com.github.shyiko.mysql.binlog.event.Event;
 import com.google.code.or.binlog.BinlogEventV4;
+
 
 /**
  * The <code>BinLogEventProcessor</code> is the interface for all bin log event processors such as
@@ -23,5 +25,8 @@ import com.google.code.or.binlog.BinlogEventV4;
  */
 public interface BinLogEventProcessor
 {
-	void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception;
+	
+	void process(Event event, OpenReplicationListener listener) throws Exception;
+
+	// void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception;
 }

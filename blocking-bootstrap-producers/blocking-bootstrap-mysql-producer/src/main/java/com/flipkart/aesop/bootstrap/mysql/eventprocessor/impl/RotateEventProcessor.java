@@ -18,10 +18,12 @@ package com.flipkart.aesop.bootstrap.mysql.eventprocessor.impl;
 import com.flipkart.aesop.bootstrap.mysql.eventlistener.OpenReplicationListener;
 import com.flipkart.aesop.bootstrap.mysql.eventprocessor.BinLogEventProcessor;
 import com.flipkart.aesop.bootstrap.mysql.txnprocessor.MysqlTransactionManager;
+import com.github.shyiko.mysql.binlog.event.RotateEventData;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.event.RotateEvent;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * The <code>QueryEventProcessor</code> processes RotateEvent from source. Rotate Event is called whenever the bin log file rotates.
@@ -38,15 +40,15 @@ public class RotateEventProcessor implements BinLogEventProcessor
 	private static final Logger LOGGER = LogFactory.getLogger(RotateEventProcessor.class);
 
 	@Override
-	public void process(BinlogEventV4 event, OpenReplicationListener listener) throws Exception {
+	public void process(Event event, OpenReplicationListener listener) throws Exception {
 		MysqlTransactionManager manager = listener.getMysqlTransactionManager();
 		if ( !manager.isBeginTxnSeen()){
 			LOGGER.warn("Skipping event (" + event
 					+ ") as this is before the start of first transaction");
 			return;
 		}
-		RotateEvent rotateEvent = (RotateEvent)event;
-		String fileName = rotateEvent.getBinlogFileName().toString();
+		RotateEventData rotateEventData = event.getData();
+		String fileName = rotateEventData.getBinlogFilename();
 		LOGGER.info("File Rotated : FileName :" + fileName + ", BinlogFilePrefix :" + listener.getBinLogPrefix());
 		String fileNumStr = fileName.substring(fileName.lastIndexOf(listener.getBinLogPrefix()) + listener.getBinLogPrefix().length() + 1);
 		manager.setCurrFileNum(Integer.parseInt(fileNumStr));

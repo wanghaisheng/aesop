@@ -15,7 +15,6 @@
 
 package com.flipkart.aesop.eventconsumer;
 
-import com.flipkart.aesop.event.AbstractEvent;
 import com.flipkart.aesop.event.EventFactory;
 import com.flipkart.aesop.event.implementation.SourceEvent;
 import com.flipkart.aesop.eventconsumer.implementation.DefaultEventConsumerImpl;
@@ -34,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * Extend this class to implement your Event Consumer, or use {@link DefaultEventConsumerImpl}.
@@ -46,7 +46,7 @@ public abstract class AbstractEventConsumer extends AbstractDatabusCombinedConsu
 	/** Logger for this class */
 	public static final Logger LOGGER = LogFactory.getLogger(AbstractEventConsumer.class);
 
-	/** Factory which generates {@link SourceEvent} using {@link DbusEvent} and {@link DbusEventDecoder}. */
+	/** Factory which generates {@link SourceEvent} using {@link Event} and {@link DbusEventDecoder}. */
 	protected EventFactory sourceEventFactory;
 	/** Maps {@link SourceEvent} to {@link List of DestinationEvent}. */
 	protected Mapper mapper;
@@ -123,41 +123,41 @@ public abstract class AbstractEventConsumer extends AbstractDatabusCombinedConsu
 
 	/**
 	 * Overridden superclass method. Returns the result of calling
-	 * {@link AbstractEventConsumer#processEvent(DbusEvent, DbusEventDecoder)}
-	 * @see com.linkedin.databus.client.consumer.AbstractDatabusCombinedConsumer#onDataEvent(com.linkedin.databus.core.DbusEvent,
+	 * {@link AbstractEventConsumer#processEvent(Event, DbusEventDecoder)}
+	 * @see com.linkedin.databus.client.consumer.AbstractDatabusCombinedConsumer#onDataDbusEvent(com.linkedin.databus.core.Event,
 	 *      com.linkedin.databus.client.pub.DbusEventDecoder)
 	 */
-	public ConsumerCallbackResult onDataEvent(DbusEvent event, DbusEventDecoder eventDecoder)
+	public ConsumerCallbackResult onDataEvent(Event event, DbusEventDecoder eventDecoder)
 	{
 		return processEvent(event, eventDecoder);
 	}
 
 	/**
 	 * Overridden superclass method. Returns the result of calling
-	 * {@link AbstractEventConsumer#processEvent(DbusEvent, DbusEventDecoder)}
-	 * @see com.linkedin.databus.client.consumer.AbstractDatabusCombinedConsumer#onBootstrapEvent(com.linkedin.databus.core.DbusEvent,
-	 *      com.linkedin.databus.client.pub.DbusEventDecoder)
+	 * {@link AbstractEventConsumer#processEvent(Event, EventDecoder)}
+	 * @see com.linkedin.databus.client.consumer.AbstractDatabusCombinedConsumer#onBootstrapEvent(com.linkedin.databus.core.Event,
+	 *      com.linkedin.databus.client.pub.EventDecoder)
 	 */
-	public ConsumerCallbackResult onBootstrapEvent(DbusEvent event, DbusEventDecoder eventDecoder)
+	public ConsumerCallbackResult onBootstrapEvent(Event event, EventDecoder eventDecoder)
 	{
 		return processEvent(event, eventDecoder);
 	}
 
 	/**
 	 * Helper method that prints out the attributes of the change event.
-	 * @param dbusEvent the Databus change event
+	 * @param Event the Databus change event
 	 * @param eventDecoder the Event decoder
 	 * @return {@link ConsumerCallbackResult#SUCCESS} if successful and {@link ConsumerCallbackResult#ERROR} in case of
 	 *         exceptions/errors
 	 */
-	private ConsumerCallbackResult processEvent(DbusEvent dbusEvent, DbusEventDecoder eventDecoder)
+	private ConsumerCallbackResult processEvent(Event Event, DbusEventDecoder eventDecoder)
 	{
 
-		LOGGER.debug("Source Id is " + dbusEvent.getSourceId());
-		AbstractEvent event;
+		LOGGER.debug("Source Id is " + Event.getHeader().getServerId());
+		Event event;
 		try
 		{
-			event = decodeSourceEvent(dbusEvent, eventDecoder);
+			event = decodeSourceEvent(Event, eventDecoder);
 			LOGGER.info("Event : " + event.toString()); // Log Properly
 		}
 		catch (DatabusException ex)
@@ -169,13 +169,13 @@ public abstract class AbstractEventConsumer extends AbstractDatabusCombinedConsu
 	}
 
 	/**
-	 * Decodes the {@link DbusEvent} to {@link SourceEvent} using {@link DbusEventDecoder}
+	 * Decodes the {@link Event} to {@link SourceEvent} using {@link EventDecoder}
 	 * @param event :   databus event
 	 * @param eventDecoder  : databus Event Decoder
 	 * @return Source Event
 	 * @throws DatabusException : dataBus Exception thrown
 	 */
-	public abstract AbstractEvent decodeSourceEvent(DbusEvent event, DbusEventDecoder eventDecoder)
+	public abstract Event decodeSourceEvent(Event event, EventDecoder eventDecoder)
 	        throws DatabusException;
 
 	/**
@@ -186,7 +186,7 @@ public abstract class AbstractEventConsumer extends AbstractDatabusCombinedConsu
 	 * @return {@link ConsumerCallbackResult#SUCCESS} if successful and {@link ConsumerCallbackResult#ERROR} in case of
 	 *         exceptions/errors
 	 */
-	public abstract ConsumerCallbackResult processSourceEvent(AbstractEvent event);
+	public abstract ConsumerCallbackResult processSourceEvent(Event event);
 
 	/**
 	 * Gets the group Id set to be processed for this event consumer.

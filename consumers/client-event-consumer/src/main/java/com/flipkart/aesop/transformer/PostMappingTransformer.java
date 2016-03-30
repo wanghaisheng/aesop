@@ -16,6 +16,7 @@ package com.flipkart.aesop.transformer;
 
 import com.flipkart.aesop.event.AbstractEvent;
 import com.flipkart.aesop.event.implementation.DestinationEvent;
+import com.github.shyiko.mysql.binlog.event.Event;
 
 /**
  * PreMappingTransformer Interface to be implemented by the {@link com.flipkart.aesop.eventconsumer.AbstractEventConsumer}
@@ -35,5 +36,5 @@ public interface PostMappingTransformer
 	 * @param event The event
 	 * @return {@link com.flipkart.aesop.event.implementation.DestinationEvent}
 	 */
-	AbstractEvent transform(AbstractEvent event);
+	Event transform(Event event);
 }

@@ -14,6 +14,8 @@
 package com.flipkart.aesop.runtime.bootstrap.consumer;
 
 import com.flipkart.aesop.event.AbstractEvent;
+import com.github.shyiko.mysql.binlog.event.Event;
+
 
 /**
  * <code>SourceEventConsumer</code> listens to {@link com.flipkart.aesop.event.AbstractEvent} and processes them
@@ -21,7 +23,10 @@ import com.flipkart.aesop.event.AbstractEvent;
  */
 public interface SourceEventConsumer
 {
-	public void onEvent(AbstractEvent event);
+	public void onEvent(Event event);
+
+//	public void onEvent(AbstractEvent event);
 
 	public void shutdown();
+
 }

@@ -25,6 +25,8 @@ import com.linkedin.databus2.relay.config.LogicalSourceStaticConfig;
 import org.trpr.platform.core.impl.logging.LogFactory;
 import org.trpr.platform.core.spi.logging.Logger;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -33,6 +35,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.github.shyiko.mysql.binlog.BinaryLogFileReader;
+
 
 /**
  * <code>MysqlEventProducer</code> starts OpenReplicator bin log event listener to listen to MySQL events & registers an
@@ -61,11 +66,11 @@ public class MysqlEventProducer<T extends AbstractEvent> extends BlockingEventPr
     /** Event Id to Event Processor map */
     protected Map<Integer, BinLogEventProcessor> eventsMap;
 
+
     @Override
     public void start(long sinceSCN)
     {
-        this.sinceSCN.set(sinceSCN);
-        openReplicator = new OpenReplicator();
+
         String binlogFile;
         try
         {
@@ -87,13 +92,20 @@ public class MysqlEventProducer<T extends AbstractEvent> extends BlockingEventPr
                     new MysqlTransactionManagerImpl<T>(logid,tableUriToSrcIdMap, tableUriToSrcNameMap, schemaRegistryService,
                             this,sourceEventConsumer);
             mysqlTxnManager.setShutdownRequested(false);
-            OpenReplicationListener orl =
-                    new OpenReplicationListener(mysqlTxnManager, eventsMap,
-                            binlogFilePrefix);
-            openReplicator.setBinlogFileName(binlogFile);
-            openReplicator.setBinlogPosition(offset);
-            openReplicator.setBinlogEventListener(orl);
-            openReplicator.start();
+
+
+
+            FileInputStream binlogFileContent = new FileInputStream(binlogFile);
+            BinaryLogFileReader reader = new BinaryLogFileReader(binlogFileContent);
+
+
+            // OpenReplicationListener orl =
+            //         new OpenReplicationListener(mysqlTxnManager, eventsMap,
+            //                 binlogFilePrefix);
+            // openReplicator.setBinlogFileName(binlogFile);
+            // openReplicator.setBinlogPosition(offset);
+            // openReplicator.setBinlogEventListener(orl);
+            // openReplicator.start();
         }
         catch (URISyntaxException u)
         {
@@ -107,11 +119,68 @@ public class MysqlEventProducer<T extends AbstractEvent> extends BlockingEventPr
         }
         catch (Exception e)
         {
-            LOGGER.error("Error occurred while starting open replication.." + e);
+            LOGGER.error("Error occurred while starting BinaryLogFileReader.." + e);
             return;
         }
-        LOGGER.info("Open Replicator has been started successfully for the file " + binlogFile);
+        LOGGER.info("BinaryLogFileReader has been started successfully for the file " + binlogFile);
     }
+
+
+//
+//    @Override
+//    public void start_bak(long sinceSCN)
+//    {
+//        this.sinceSCN.set(sinceSCN);
+//        openReplicator = new OpenReplicator();
+//        String binlogFile;
+//        try
+//        {
+//            String binlogFilePrefix = processUri(new URI(physicalSourceStaticConfig.getUri()));
+//            int offset = offset(sinceSCN);
+//            int logid = logid(sinceSCN);
+//            LOGGER.info("SCN : " + offset + " logid : " + logid);
+//            binlogFile = String.format("%s.%06d", binlogFilePrefix, logid);
+//            LOGGER.info("Bin Log File Name : " + binlogFile);
+//            Map<String, Short> tableUriToSrcIdMap = new HashMap<String, Short>();
+//            Map<String, String> tableUriToSrcNameMap = new HashMap<String, String>();
+//            for (LogicalSourceStaticConfig sourceConfig : physicalSourceStaticConfig.getSources())
+//            {
+//                tableUriToSrcIdMap.put(sourceConfig.getUri().toLowerCase(), sourceConfig.getId());
+//                tableUriToSrcNameMap.put(sourceConfig.getUri().toLowerCase(), sourceConfig.getName());
+//            }
+//
+//            mysqlTxnManager =
+//                    new MysqlTransactionManagerImpl<T>(logid,tableUriToSrcIdMap, tableUriToSrcNameMap, schemaRegistryService,
+//                            this,sourceEventConsumer);
+//            mysqlTxnManager.setShutdownRequested(false);
+//
+//
+//
+//            OpenReplicationListener orl =
+//                    new OpenReplicationListener(mysqlTxnManager, eventsMap,
+//                            binlogFilePrefix);
+//            openReplicator.setBinlogFileName(binlogFile);
+//            openReplicator.setBinlogPosition(offset);
+//            openReplicator.setBinlogEventListener(orl);
+//            openReplicator.start();
+//        }
+//        catch (URISyntaxException u)
+//        {
+//            LOGGER.error("Exception occurred while processing uri : " + u);
+//            return;
+//        }
+//        catch (InvalidConfigException e)
+//        {
+//            LOGGER.error("Exception occurred while processing uri : " + e);
+//            return;
+//        }
+//        catch (Exception e)
+//        {
+//            LOGGER.error("Error occurred while starting open replication.." + e);
+//            return;
+//        }
+//        LOGGER.info("Open Replicator has been started successfully for the file " + binlogFile);
+//    }
 
     /**
      * Extracts individual attributes such as username, password, hostname, port ,server id etc from the uri of the
